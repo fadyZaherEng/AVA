@@ -1,19 +1,21 @@
+// ignore_for_file: must_be_immutable, use_key_in_widget_constructors, avoid_print
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ava/layout/cubit/cubit.dart';
-import 'package:ava/layout/cubit/states.dart';
-import 'package:ava/models/user_profile.dart';
-import 'package:ava/modules/chat/chat_screen.dart';
-import 'package:ava/shared/components/components.dart';
-import 'package:ava/shared/network/local/cashe_helper.dart';
+import 'package:ava_bishoy/layout/cubit/cubit.dart';
+import 'package:ava_bishoy/layout/cubit/states.dart';
+import 'package:ava_bishoy/models/user_profile.dart';
+import 'package:ava_bishoy/modules/chat/chat_screen.dart';
+import 'package:ava_bishoy/shared/components/components.dart';
+import 'package:ava_bishoy/shared/network/local/cashe_helper.dart';
 
 class UsersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Builder(builder: (context) {
       return BlocConsumer<ChatHomeCubit, ChatHomeStates>(
-          listener: (context, state) {},
+          listener: (context, state) {
+          },
           builder: (context, state) {
             print(ChatHomeCubit.get(context).users.length);
             print(ChatHomeCubit.get(context).usersStatus.length);
@@ -21,7 +23,7 @@ class UsersScreen extends StatelessWidget {
               condition: ChatHomeCubit.get(context).users.isNotEmpty,
               builder: (context) => ListView.separated(
                   itemBuilder: (context, index) => buildItem(
-                      context, ChatHomeCubit.get(context).users[index]),
+                      context, ChatHomeCubit.get(context).users.elementAt(index)),
                   separatorBuilder: (context, index) => Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: Container(

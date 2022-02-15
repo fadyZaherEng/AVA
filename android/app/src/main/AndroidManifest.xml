@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.ava">
+    package="com.example.ava_bishoy">
    <application
         android:label="AVA"
         android:name="${applicationName}"

@@ -1,15 +1,17 @@
+// ignore_for_file: must_be_immutable, use_key_in_widget_constructors
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:ava/layout/cubit/cubit.dart';
-import 'package:ava/layout/cubit/states.dart';
-import 'package:ava/models/massage_model.dart';
-import 'package:ava/models/user_profile.dart';
-import 'package:ava/shared/network/local/cashe_helper.dart';
-import 'package:ava/shared/network/remote/dio_helper.dart';
-import 'package:ava/shared/styles/Icon_broken.dart';
+import 'package:ava_bishoy/layout/cubit/cubit.dart';
+import 'package:ava_bishoy/layout/cubit/states.dart';
+import 'package:ava_bishoy/models/massage_model.dart';
+import 'package:ava_bishoy/models/user_profile.dart';
+import 'package:ava_bishoy/shared/network/local/cashe_helper.dart';
+import 'package:ava_bishoy/shared/network/remote/dio_helper.dart';
+import 'package:ava_bishoy/shared/styles/Icon_broken.dart';
 
 class ChatScreen extends StatelessWidget {
   UserProfile? receiverProfile;
@@ -107,13 +109,6 @@ class ChatScreen extends StatelessWidget {
                                             return buildSenderMassage(
                                                 massage, context, index);
                                           } else {
-                                            // if(ChatHomeCubit.get(context).usersStatus[receiverProfile!.uId]!='Online')
-                                            //   {
-                                            //     // DioHelper.postData(token: receiverProfile!.token.token,
-                                            //     //     massage:"you have massage from${ChatHomeCubit.get(context).userProfile!.name}")
-                                            //     // .then((value) {})
-                                            //     // .catchError((onError){});
-                                            //   }
                                             return buildReceiverMassage(
                                                 massage, context, index);
                                           }
@@ -125,13 +120,6 @@ class ChatScreen extends StatelessWidget {
                                             return buildSenderImageMassage(
                                                 massage, context, index);
                                           } else {
-                                            // if(ChatHomeCubit.get(context).usersStatus[receiverProfile!.uId]!='Online')
-                                            // {
-                                            //   DioHelper.postData(token: receiverProfile!.token.token,
-                                            //       massage:"you have massage from${ChatHomeCubit.get(context).userProfile!.name}")
-                                            //       .then((value) {})
-                                            //       .catchError((onError){});
-                                            // }
                                             return buildReceiverImageMassage(
                                                 massage, context, index);
                                           }
@@ -177,7 +165,9 @@ class ChatScreen extends StatelessWidget {
             barrierDismissible: false, //prevent close
             context: context,
             builder: (context) => AlertDialog(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              backgroundColor: SharedHelper.get(key: 'theme') == 'Light Theme'
+                ? Colors.white
+                : Theme.of(context).scaffoldBackgroundColor,
               title: Text(
                 'Delete Massage',
                 style: Theme.of(context).textTheme.bodyText1,
@@ -191,7 +181,9 @@ class ChatScreen extends StatelessWidget {
                           context: context,
                           builder: (context) => AlertDialog(
                             backgroundColor:
-                                Theme.of(context).scaffoldBackgroundColor,
+                                SharedHelper.get(key: 'theme') == 'Light Theme'
+                                    ? Colors.white
+                                    : Theme.of(context).scaffoldBackgroundColor,
                             title: Text(
                               'Delete Massage',
                               style: Theme.of(context).textTheme.bodyText1,
@@ -257,7 +249,9 @@ class ChatScreen extends StatelessWidget {
                           context: context,
                           builder: (context) => AlertDialog(
                             backgroundColor:
-                                Theme.of(context).scaffoldBackgroundColor,
+                                SharedHelper.get(key: 'theme') == 'Light Theme'
+                                    ? Colors.white
+                                    : Theme.of(context).scaffoldBackgroundColor,
                             title: Text(
                               'Delete Massage',
                               style: Theme.of(context).textTheme.bodyText1,
@@ -337,7 +331,9 @@ class ChatScreen extends StatelessWidget {
             barrierDismissible: false, //prevent close
             context: context,
             builder: (context) => AlertDialog(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              backgroundColor: SharedHelper.get(key: 'theme') == 'Light Theme'
+                  ? Colors.white
+                  : Theme.of(context).scaffoldBackgroundColor,
               title: Text(
                 'Delete Massage',
                 style: Theme.of(context).textTheme.bodyText1,
@@ -351,7 +347,9 @@ class ChatScreen extends StatelessWidget {
                           context: context,
                           builder: (context) => AlertDialog(
                             backgroundColor:
-                                Theme.of(context).scaffoldBackgroundColor,
+                                SharedHelper.get(key: 'theme') == 'Light Theme'
+                                    ? Colors.white
+                                    : Theme.of(context).scaffoldBackgroundColor,
                             title: Text(
                               'Delete Massage',
                               style: Theme.of(context).textTheme.bodyText1,
@@ -417,7 +415,9 @@ class ChatScreen extends StatelessWidget {
                           context: context,
                           builder: (context) => AlertDialog(
                             backgroundColor:
-                                Theme.of(context).scaffoldBackgroundColor,
+                                SharedHelper.get(key: 'theme') == 'Light Theme'
+                                    ? Colors.white
+                                    : Theme.of(context).scaffoldBackgroundColor,
                             title: Text(
                               'Delete Massage',
                               style: Theme.of(context).textTheme.bodyText1,
@@ -544,7 +544,9 @@ class ChatScreen extends StatelessWidget {
             barrierDismissible: false, //prevent close
             context: context,
             builder: (context) => AlertDialog(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              backgroundColor: SharedHelper.get(key: 'theme') == 'Light Theme'
+                  ? Colors.white
+                  : Theme.of(context).scaffoldBackgroundColor,
               title: Text(
                 'Delete Massage',
                 style: Theme.of(context).textTheme.bodyText1,
@@ -750,7 +752,9 @@ class ChatScreen extends StatelessWidget {
             barrierDismissible: false, //prevent close
             context: context,
             builder: (context) => AlertDialog(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              backgroundColor: SharedHelper.get(key: 'theme') == 'Light Theme'
+                  ? Colors.white
+                  : Theme.of(context).scaffoldBackgroundColor,
               title: Text(
                 'Delete Massage',
                 style: Theme.of(context).textTheme.bodyText1,
@@ -830,7 +834,9 @@ class ChatScreen extends StatelessWidget {
                           context: context,
                           builder: (context) => AlertDialog(
                             backgroundColor:
-                                Theme.of(context).scaffoldBackgroundColor,
+                                SharedHelper.get(key: 'theme') == 'Light Theme'
+                                    ? Colors.white
+                                    : Theme.of(context).scaffoldBackgroundColor,
                             title: Text(
                               'Delete Massage',
                               style: Theme.of(context).textTheme.bodyText1,

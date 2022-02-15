@@ -1,8 +1,8 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, avoid_function_literals_in_foreach_calls, non_constant_identifier_names
 
 import 'dart:io';
 
-import 'package:ava/layout/cubit/cubit.dart';
+import 'package:ava_bishoy/layout/cubit/cubit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -10,12 +10,12 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:ava/layout/home_screen.dart';
-import 'package:ava/models/user_profile.dart';
-import 'package:ava/modules/login/cubit/states.dart';
-import 'package:ava/modules/login/login_screen.dart';
-import 'package:ava/shared/components/components.dart';
-import 'package:ava/shared/network/local/cashe_helper.dart';
+import 'package:ava_bishoy/layout/home_screen.dart';
+import 'package:ava_bishoy/models/user_profile.dart';
+import 'package:ava_bishoy/modules/login/cubit/states.dart';
+import 'package:ava_bishoy/modules/login/login_screen.dart';
+import 'package:ava_bishoy/shared/components/components.dart';
+import 'package:ava_bishoy/shared/network/local/cashe_helper.dart';
 
 class ChatLoginCubit extends Cubit<ChatLogInStates> {
   ChatLoginCubit() : super(LoginInitialStates());
@@ -91,7 +91,18 @@ class ChatLoginCubit extends Cubit<ChatLogInStates> {
             .doc(value.user!.uid.toString())
             .get()
             .then((value) {
-          if (value.data()!['status']) {
+          if (value.data()!['status'] && value.data()!['block_final']) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+                ' ..هذا الايميل محظور',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.green),
+              ),
+              backgroundColor: Colors.white,
+            ));
+            emit(LoginErrorStates(onError.toString()));
+          } else if (value.data()!['status']) {
+            SharedHelper.save(value: value.data()!['block'], key: 'block');
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text(
                 'Logged Successfully',
@@ -156,6 +167,8 @@ class ChatLoginCubit extends Cubit<ChatLogInStates> {
       var x = value;
       var token = await FirebaseMessaging.instance.getToken();
       print('ddddddddddddddddddddddddd$token');
+      SharedHelper.save(value: false, key: 'block');
+      SharedHelper.save(value: false, key: 'block_final');
       userProfile = UserProfile(
           email: email,
           name: name,
@@ -164,7 +177,11 @@ class ChatLoginCubit extends Cubit<ChatLogInStates> {
           phone: phone,
           token: token,
           status: false,
-          uId: value.user!.uid.toString());
+          uId: value.user!.uid.toString(),
+          bio: 'write bio',
+          block: false,
+          block_final: false,
+          disappear: true);
       storeDatabaseFirestore(value.user!.uid.toString()).then((value) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(

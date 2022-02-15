@@ -1,16 +1,28 @@
+// ignore_for_file: must_be_immutable, use_key_in_widget_constructors
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ava/modules/login/cubit/cubit.dart';
-import 'package:ava/modules/login/cubit/states.dart';
-import 'package:ava/shared/components/components.dart';
-import 'package:ava/shared/network/local/cashe_helper.dart';
+import 'package:ava_bishoy/modules/login/cubit/cubit.dart';
+import 'package:ava_bishoy/modules/login/cubit/states.dart';
+import 'package:ava_bishoy/shared/components/components.dart';
+import 'package:ava_bishoy/shared/network/local/cashe_helper.dart';
 
-class LogInScreen extends StatelessWidget {
+class LogInScreen extends StatefulWidget {
+  @override
+  State<LogInScreen> createState() => _LogInScreenState();
+}
+
+class _LogInScreenState extends State<LogInScreen> {
   var emailController = TextEditingController();
+
   var passwordController = TextEditingController();
+
   var nameController = TextEditingController();
+
   var phoneController = TextEditingController();
+
   var loginKey = GlobalKey<FormState>();
+
   var scafoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -18,8 +30,7 @@ class LogInScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => ChatLoginCubit(),
       child: BlocConsumer<ChatLoginCubit, ChatLogInStates>(
-        listener: (context, state) {
-        },
+        listener: (context, state) {},
         builder: (context, state) {
           return Scaffold(
             key: scafoldKey,
@@ -108,7 +119,6 @@ class LogInScreen extends StatelessWidget {
                                   Icons.phone,
                                   color: Colors.pink,
                                 ),
-
                                 text: 'Phone',
                                 validate: (val) {
                                   if (val.toString().isEmpty) {
@@ -132,7 +142,6 @@ class LogInScreen extends StatelessWidget {
                                   Icons.person,
                                   color: Colors.pink,
                                 ),
-
                                 text: 'Username',
                                 validate: (val) {
                                   if (val.toString().isEmpty) {
@@ -196,7 +205,11 @@ class LogInScreen extends StatelessWidget {
                                         : MaterialButton(
                                             onPressed: () {
                                               FocusScope.of(context).unfocus();
-                                              if (loginKey.currentState!.validate() && ChatLoginCubit.get(context).logInMaterialButton == 'Login') {
+                                              if (loginKey.currentState!
+                                                      .validate() &&
+                                                  ChatLoginCubit.get(context)
+                                                          .logInMaterialButton ==
+                                                      'Login') {
                                                 ChatLoginCubit.get(context)
                                                     .LogIn(
                                                         email: emailController
@@ -208,7 +221,11 @@ class LogInScreen extends StatelessWidget {
                                                                 .trim(),
                                                         context: context);
                                               } else {
-                                                if (loginKey.currentState!.validate() && ChatLoginCubit.get(context).profileImageUrl != null) {
+                                                if (loginKey.currentState!
+                                                        .validate() &&
+                                                    ChatLoginCubit.get(context)
+                                                            .profileImageUrl !=
+                                                        null) {
                                                   ChatLoginCubit.get(
                                                           context)
                                                       .signUp(
@@ -231,10 +248,15 @@ class LogInScreen extends StatelessWidget {
                                                               .profileImageUrl!,
                                                           context: context);
                                                 } else {
-                                                  showToast(message: 'Please Select Your Profile Image', state: ToastState.WARNING);
+                                                  showToast(
+                                                      message:
+                                                          'Please Select Your Profile Image',
+                                                      state:
+                                                          ToastState.WARNING);
                                                 }
                                               }
-                                              SharedHelper.save(value: true, key: 'signIn');
+                                              SharedHelper.save(
+                                                  value: true, key: 'signIn');
                                             },
                                             child: Text(
                                               ChatLoginCubit.get(context)

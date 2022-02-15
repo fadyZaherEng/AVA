@@ -1,18 +1,16 @@
+// ignore_for_file: must_be_immutable, use_key_in_widget_constructors
+import 'package:ava_bishoy/models/video_model_user.dart';
+import 'package:ava_bishoy/modules/show_video/video.dart';
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:ava/layout/cubit/cubit.dart';
-import 'package:ava/layout/cubit/states.dart';
-import 'package:ava/models/file_model.dart';
-import 'package:ava/models/file_model_user.dart';
-import 'package:ava/modules/view_lectures/view_lectures.dart';
-import 'package:ava/shared/components/components.dart';
-import 'package:ava/shared/network/local/cashe_helper.dart';
-import 'package:ava/shared/styles/Icon_broken.dart';
+import 'package:ava_bishoy/layout/cubit/cubit.dart';
+import 'package:ava_bishoy/layout/cubit/states.dart';
+import 'package:ava_bishoy/shared/network/local/cashe_helper.dart';
+import 'package:ava_bishoy/shared/styles/Icon_broken.dart';
 
-class UploadPDFUsingUser extends StatelessWidget {
+class UploadVideosUsingUser extends StatelessWidget {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
   var fileNameController = TextEditingController();
@@ -35,82 +33,65 @@ class UploadPDFUsingUser extends StatelessWidget {
                   Navigator.pop(context);
                 },
                 icon: const Icon(IconBroken.Arrow___Left_2)),
-               title:SharedHelper.get(key: 'isAdmin')==false? Text(ChatHomeCubit.get(context).lecturesUsingUser.isNotEmpty
-                ? 'Add PDF'
-                : 'Waiting To Accept Form Admin'):Text('User Requests'),
+            title: const Text('User Requests'),
           ),
-          body:SharedHelper.get(key: 'isAdmin')? ConditionalBuilder(
-            condition: ChatHomeCubit.get(context).lecturesUsingUser.isNotEmpty,
+          body: ConditionalBuilder(
+            condition: ChatHomeCubit.get(context).VideosUsingUser.isNotEmpty,
             builder: (context) => ListView.separated(
                 physics: const BouncingScrollPhysics(),
                 itemBuilder: (context, index) => buildItem(context,
-                    ChatHomeCubit.get(context).lecturesUsingUser[index],index),
+                    ChatHomeCubit.get(context).VideosUsingUser[index], index),
                 separatorBuilder: (context, index) => const SizedBox(
                       height: 15,
                     ),
-                itemCount: ChatHomeCubit.get(context).lecturesUsingUser.length),
+                itemCount: ChatHomeCubit.get(context).VideosUsingUser.length),
             fallback: (context) => Center(
               child: Text(
-                'No PDF',
+                'No Video',
                 style: Theme.of(context).textTheme.bodyText1,
               ),
             ),
-          ):null,
-          floatingActionButton:SharedHelper.get(key: 'isAdmin')==false?
-         state is GetFileLoadingStates?const LinearProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>((Colors.pink)),):
-         FloatingActionButton(
-            onPressed: () {
-              scaffoldKey.currentState!.showBottomSheet(
-                  (context) => buildBottomSheet(context, state));
-            },
-            backgroundColor: SharedHelper.get(key: 'theme') == 'Light Theme'
-                ? Colors.pink
-                : Colors.white,
-            child: const Icon(Icons.add),
-          )
-         :null,
+          ),
         );
       },
     );
   }
 
-  Widget buildItem(context, FileModelUser model,index) => Padding(
-    padding: const EdgeInsets.all(1.0),
-    child: InkWell(
+  Widget buildItem(context, VideoModelUser model, index) => Padding(
+        padding: const EdgeInsets.all(1.0),
+        child: InkWell(
           child: Container(
             color: Colors.black,
             width: double.infinity,
-            height:SharedHelper.get(key: 'isAdmin')?225: 130,
+            height: 225,
             margin: const EdgeInsetsDirectional.only(start: 5, end: 5, top: 5),
             child: Column(
               children: [
-                if(SharedHelper.get(key: 'isAdmin'))
                 Padding(
                   padding: const EdgeInsets.all(1.0),
                   child: Row(
                     children: [
                       Text(
                         model.username,
-                        style:const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white
-                        ),
+                        style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
                       ),
                       const Spacer(),
                       Text(
                         getTime(model.date),
                         style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.white
-                      ),
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.white),
                       ),
                     ],
                   ),
                 ),
-                if(SharedHelper.get(key: 'isAdmin'))
-                const SizedBox(height: 10,),
+                const SizedBox(
+                  height: 10,
+                ),
                 Stack(
                   children: [
                     Image(
@@ -136,13 +117,13 @@ class UploadPDFUsingUser extends StatelessWidget {
                           child: Center(
                             child: Text(
                               model.name,
-                              style:
-                                  SharedHelper.get(key: "theme") == 'Light Theme'
-                                      ? Theme.of(context).textTheme.bodyText1
-                                      : const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white),
+                              style: SharedHelper.get(key: "theme") ==
+                                      'Light Theme'
+                                  ? Theme.of(context).textTheme.bodyText1
+                                  : const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white),
                             ),
                           ),
                         ),
@@ -150,17 +131,19 @@ class UploadPDFUsingUser extends StatelessWidget {
                     ),
                   ],
                 ),
-                if(SharedHelper.get(key: 'isAdmin'))
-                const SizedBox(height: 10,),
-                if(SharedHelper.get(key: 'isAdmin'))
+                const SizedBox(
+                  height: 10,
+                ),
                 Padding(
                   padding: const EdgeInsets.all(1.0),
                   child: Row(
                     children: [
                       MaterialButton(
                         color: Colors.green,
-                        onPressed: (){
-                          ChatHomeCubit.get(context).accept(pdfId: ChatHomeCubit.get(context).lecturesUsingUserId[index]);
+                        onPressed: () {
+                          ChatHomeCubit.get(context).acceptVideoUsingUser(
+                              videoId: ChatHomeCubit.get(context)
+                                  .VideosUsingUserId[index]);
                         },
                         child: Text(
                           'Accept',
@@ -170,8 +153,10 @@ class UploadPDFUsingUser extends StatelessWidget {
                       const Spacer(),
                       MaterialButton(
                         color: Colors.red,
-                        onPressed: (){
-                          ChatHomeCubit.get(context).reject(pdfId: ChatHomeCubit.get(context).lecturesUsingUserId[index]);
+                        onPressed: () {
+                          ChatHomeCubit.get(context).rejectVideoUsingUser(
+                              videoId: ChatHomeCubit.get(context)
+                                  .VideosUsingUserId[index]);
                         },
                         child: Text(
                           'Reject',
@@ -188,75 +173,10 @@ class UploadPDFUsingUser extends StatelessWidget {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => LectureViewer(
-                        FileModel(name: model.name, link: model.link))));
+                    builder: (context) => VideoWidget(model.link)));
           },
         ),
-  );
-
-  Widget buildBottomSheet(context, state) {
-    return Padding(
-      padding: const EdgeInsets.all(15.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Form(
-            key: vv,
-            child: defaultTextForm(
-                key: 'lecture',
-                context: context,
-                type: TextInputType.text,
-                Controller: fileNameController,
-                prefixIcon: const Icon(
-                  Icons.picture_as_pdf_sharp,
-                  color: Colors.pink,
-                ),
-                text: 'Lecture Name',
-                validate: (val) {
-                  if (val.toString().isEmpty) {
-                    return 'Please Enter Lecture Name';
-                  }
-                },
-                onSubmitted: () {}),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          OutlinedButton(
-              onPressed: () {
-                if (vv.currentState!.validate()) {
-                  ChatHomeCubit.get(context).getPDFUsingUser(
-                    context: context,
-                    name: fileNameController.text,
-                    date: DateTime.now().toString(),
-                    username: ChatHomeCubit.get(context).userProfile!.name,
-                  );
-                  Navigator.pop(context);
-                }
-              },
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.picture_as_pdf_sharp,
-                      color: Colors.pink,
-                    ),
-                    const SizedBox(
-                      width: 7,
-                    ),
-                    Text(
-                      'Click To Upload PDF',
-                      style: Theme.of(context).textTheme.bodyText1,
-                    )
-                  ],
-                ),
-              )),
-        ],
-      ),
-    );
-  }
+      );
 
   String getTime(dateTime) {
     DateTime lastTime = DateTime.parse(dateTime);

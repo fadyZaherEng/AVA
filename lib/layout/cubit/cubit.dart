@@ -1,23 +1,34 @@
+// ignore_for_file: avoid_function_literals_in_foreach_calls, non_constant_identifier_names
+
 import 'dart:io';
+import 'package:ava_bishoy/models/image_model%20.dart';
+import 'package:ava_bishoy/models/image_model_user.dart';
+import 'package:ava_bishoy/models/video_model%20.dart';
+import 'package:ava_bishoy/models/video_model_user.dart';
+import 'package:ava_bishoy/modules/images/image_screen.dart';
+import 'package:ava_bishoy/modules/videos/video_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:ava/layout/cubit/states.dart';
-import 'package:ava/models/file_model.dart';
-import 'package:ava/models/file_model_user.dart';
-import 'package:ava/models/massage_model.dart';
-import 'package:ava/models/user_profile.dart';
-import 'package:ava/modules/lecture/lecture_screen.dart';
-import 'package:ava/modules/setting/setting_screen.dart';
-import 'package:ava/modules/users/user_screen.dart';
-import 'package:ava/shared/components/components.dart';
-import 'package:ava/shared/network/local/cashe_helper.dart';
-import 'package:ava/shared/network/remote/dio_helper.dart';
-import 'package:ava/shared/styles/Icon_broken.dart';
+import 'package:ava_bishoy/layout/cubit/states.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:ava_bishoy/models/file_model.dart';
+import 'package:ava_bishoy/models/model_group_massage.dart';
+import 'package:ava_bishoy/models/file_model_user.dart';
+import 'package:ava_bishoy/models/massage_model.dart';
+import 'package:ava_bishoy/models/user_profile.dart';
+import 'package:ava_bishoy/modules/lecture/lecture_screen.dart';
+import 'package:ava_bishoy/modules/setting/setting_screen.dart';
+import 'package:ava_bishoy/modules/users/user_screen.dart';
+import 'package:ava_bishoy/shared/components/components.dart';
+import 'package:ava_bishoy/shared/network/local/cashe_helper.dart';
+import 'package:ava_bishoy/shared/network/remote/dio_helper.dart';
+import 'package:ava_bishoy/shared/styles/Icon_broken.dart';
 import 'package:intl/intl.dart';
 
 // ignore_for_file: avoid_print
@@ -27,22 +38,59 @@ class ChatHomeCubit extends Cubit<ChatHomeStates> {
   static ChatHomeCubit get(context) => BlocProvider.of(context);
   var nameController = TextEditingController();
   var phoneController = TextEditingController();
+  var bioController = TextEditingController();
+  bool? disAppear;
+  void disAppearPhnone(bool val) {
+    disAppear = val;
+    emit(PhoneState());
+  }
 
   int currentIndex = 0;
-  List<Widget> listScreen = [
+
+  List<Widget> listLecturesScreen = [
     UsersScreen(),
     LectureScreen(),
     SettingsScreen(),
   ];
-  List<String> listTitles = [
-    'Users',
-    'Lectures',
-    'Settings',
-  ];
-  List<BottomNavigationBarItem> bottomNavList = const [
+
+  List<BottomNavigationBarItem> bottomNavLecturesList = const [
     BottomNavigationBarItem(icon: Icon(IconBroken.User), label: 'Users'),
     BottomNavigationBarItem(
         icon: Icon(Icons.set_meal_rounded), label: 'Lectures'),
+    BottomNavigationBarItem(icon: Icon(IconBroken.Setting), label: 'Settings'),
+  ];
+  dynamic listBody = [
+    UsersScreen(),
+    LectureScreen(),
+    SettingsScreen(),
+  ];
+  dynamic listNav = const [
+    BottomNavigationBarItem(icon: Icon(IconBroken.User), label: 'Users'),
+    BottomNavigationBarItem(
+        icon: Icon(Icons.set_meal_rounded), label: 'Lectures'),
+    BottomNavigationBarItem(icon: Icon(IconBroken.Setting), label: 'Settings'),
+  ];
+
+  List<Widget> listImagesScreen = [
+    UsersScreen(),
+    ImageScreen(),
+    SettingsScreen(),
+  ];
+
+  List<BottomNavigationBarItem> bottomNavImagesList = const [
+    BottomNavigationBarItem(icon: Icon(IconBroken.User), label: 'Users'),
+    BottomNavigationBarItem(icon: Icon(IconBroken.Image), label: 'Images'),
+    BottomNavigationBarItem(icon: Icon(IconBroken.Setting), label: 'Settings'),
+  ];
+  List<Widget> listVideosScreen = [
+    UsersScreen(),
+    VideosScreen(),
+    SettingsScreen(),
+  ];
+
+  List<BottomNavigationBarItem> bottomNavVideosList = const [
+    BottomNavigationBarItem(icon: Icon(IconBroken.User), label: 'Users'),
+    BottomNavigationBarItem(icon: Icon(IconBroken.Video), label: 'Videos'),
     BottomNavigationBarItem(icon: Icon(IconBroken.Setting), label: 'Settings'),
   ];
 
@@ -109,7 +157,7 @@ class ChatHomeCubit extends Cubit<ChatHomeStates> {
   //get online w offline
   ///////////////////////////////////////////////////
   //get all users
-  List<UserProfile> users = [];
+  Set<UserProfile> users = {};
   Map<String, String> usersStatus = {};
 
   void getAllUsers() async {
@@ -119,11 +167,12 @@ class ChatHomeCubit extends Cubit<ChatHomeStates> {
         .orderBy('name')
         .snapshots()
         .listen((event) async {
-      users = [];
+      users.clear();
       usersStatus.clear();
       for (var element in event.docs) {
         if (element.data()['uId'] != SharedHelper.get(key: 'uid') &&
-            element.data()['status']) {
+            element.data()['status'] &&
+            !element.data()['block_final']) {
           DocumentSnapshot<Map<String, dynamic>> Status =
               await FirebaseFirestore.instance
                   .collection('users')
@@ -131,13 +180,12 @@ class ChatHomeCubit extends Cubit<ChatHomeStates> {
                   .collection('userStatus')
                   .doc('status')
                   .get();
-          users.add(UserProfile.fromJson(element.data()));
-          usersStatus[element.data()['uId']] = Status['userStatus'];
+            users.add(UserProfile.fromJson(element.data()));
+            usersStatus[element.data()['uId']] = Status['userStatus'];
         }
       }
       emit(ChatGetAllUsersSuccessStates());
     }).onError((handleError) {
-      print('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee${handleError.toString()}');
       emit(ChatGetAllUsersErrorStates());
     }); //uid
   }
@@ -159,7 +207,8 @@ class ChatHomeCubit extends Cubit<ChatHomeStates> {
             .snapshots()
             .listen((event) {
           if (element.data()['uId'] != SharedHelper.get(key: 'uid') &&
-              element.data()['status']) {
+              element.data()['status'] &&
+              !element.data()['block_final']) {
             usersStatus[element.data()['uId']] = event['userStatus'];
             emit(SocialGetUserStatusSuccessStates());
           }
@@ -175,6 +224,8 @@ class ChatHomeCubit extends Cubit<ChatHomeStates> {
   void editProfile({
     required String name,
     required String phone,
+    required String bio,
+    required bool disAppear,
     required context,
   }) async {
     var token = await FirebaseMessaging.instance.getToken();
@@ -186,7 +237,11 @@ class ChatHomeCubit extends Cubit<ChatHomeStates> {
         phone: phone,
         uId: SharedHelper.get(key: 'uid'),
         status: true,
-        token: token);
+        token: token,
+        bio: bio,
+        block: userProfile!.block,
+        block_final: userProfile!.block_final,
+        disappear: disAppear);
     FirebaseFirestore.instance
         .collection('users')
         .doc(SharedHelper.get(key: 'uid'))
@@ -556,83 +611,6 @@ class ChatHomeCubit extends Cubit<ChatHomeStates> {
     });
   }
 
-  // ///////////////////lectures using user
-  // void getPDFUsingUser({
-  //   required String name,
-  //   required String username,
-  //   required String date,
-  //   required  context,
-  // }) async{
-  //   emit(GetFileLoadingStates());
-  //   FilePickerResult? result=await FilePicker.platform.pickFiles();
-  //   File pick=File(result!.files.single.path.toString());
-  //   var file=pick.readAsBytesSync();
-  //   if(result!=null) {
-  //     FirebaseStorage.instance
-  //         .ref()
-  //         .child(
-  //         'lectures/${DateTime.now().millisecondsSinceEpoch}').child('/.pdf')
-  //         .putData(file)
-  //         .then((val) {
-  //       val.ref.getDownloadURL().then((value) {
-  //         storeInFirestoreUsingUser(link:value.toString(),pdfName: name,username: username,date: date,context: context);
-  //       }).catchError((onError) {
-  //         showToast(message:onError.toString(), state: ToastState.WARNING);
-  //         emit(GetFileErrorStates());
-  //       });
-  //     }).catchError((onError) {
-  //       showToast(message:onError.toString(), state: ToastState.WARNING);
-  //       emit(GetFileErrorStates());
-  //     });
-  //
-  //   }
-  //   else{
-  //     showToast(message: 'No File Selected', state: ToastState.WARNING);
-  //     emit(GetFileSuccessStates());
-  //   }
-  // }
-  // void storeInFirestoreUsingUser({
-  //   required String pdfName,
-  //   required String link,
-  //   required String username,
-  //   required String date,
-  //   required context,
-  // }) {
-  //   FileModelUser model=FileModelUser(name: pdfName, link: link,date: date,username: username);
-  //   FirebaseFirestore.instance
-  //       .collection('lecturesUsingUser')
-  //       .add(model.toMap())
-  //       .then((value) {
-  //         Navigator.pop(context);
-  //     showToast(message: 'File Uploaded Successfully', state: ToastState.SUCCESS);
-  //     emit(GetFileSuccessStates());
-  //   })
-  //       .catchError((onError){
-  //     showToast(message:onError.toString(), state: ToastState.WARNING);
-  //     emit(GetFileErrorStates());
-  //   });
-  // }
-  //
-  // List<FileModelUser>lecturesUsingUser=[];
-  // List<String>lecturesUsingUserId=[];
-  // void getLecturesUsingUser()
-  // {
-  //   emit(ViewFileLoadingStates());
-  //   FirebaseFirestore.instance
-  //       .collection('lecturesUsingUser')
-  //       .snapshots()
-  //       .listen((event) {
-  //     lecturesUsingUser=[];
-  //     lecturesUsingUserId=[];
-  //     event.docs.forEach((element) {
-  //       lecturesUsingUser.add(FileModelUser.fromJson(element.data()));
-  //       lecturesUsingUserId.add(element.id);
-  //     });
-  //     emit(ViewFileSuccessStates());
-  //   }).onError((handleError){
-  //     emit(ViewFileErrorStates());
-  //   });
-  // }
   //accept lecture from admin
   void accept({required String pdfId}) {
     {
@@ -735,7 +713,11 @@ class ChatHomeCubit extends Cubit<ChatHomeStates> {
         name: profile.name,
         password: profile.password,
         image: profile.image,
-        phone: profile.phone);
+        phone: profile.phone,
+        bio: profile.bio,
+        block: profile.block,
+        block_final: profile.block_final,
+        disappear: profile.disappear);
     FirebaseFirestore.instance
         .collection('users')
         .doc(profile.uId)
@@ -795,10 +777,8 @@ class ChatHomeCubit extends Cubit<ChatHomeStates> {
                                 .then((value) {
                               usersStatus.remove(profile.uId);
                               Navigator.pop(context);
-                              DioHelper.postData(
-                                      token: profile.token,
-                                      massage:
-                                          "عذرا لقد تم رفض حسابك تستطيع ان تجعل حساب اخر ")
+                              DioHelper.postData(token: profile.token,
+                                      massage: "عذرا لقد تم رفض حسابك تستطيع ان تجعل حساب اخر ")
                                   .then((value) {
                                 emit(GetUserRejectWaitingSuccessStates());
                               }).catchError((onError) {
@@ -839,4 +819,664 @@ class ChatHomeCubit extends Cubit<ChatHomeStates> {
               ),
             ));
   }
+
+  //add massages group
+  void addMassageToGroup(
+      {required String? text,
+      required String dateTime,
+      required String createdAt,
+      String? chatImage}) {
+    MassageModelGroup model = MassageModelGroup(
+        senderId: userProfile!.uId,
+        text: text,
+        dateTime: dateTime,
+        createdAt: createdAt,
+        image: chatImage,
+        name: userProfile!.name,
+        userImage: userProfile!.image);
+    FirebaseFirestore.instance
+        .collection('group')
+        .doc('chat')
+        .collection('massages')
+        .add(model.toMap())
+        .then((value) {
+      emit(SocialAddMassageSuccessStates());
+    }).catchError((onError) {
+      emit(SocialAddMassageErrorStates());
+    });
+  }
+
+  List<MassageModelGroup> massagesGroup = [];
+  List<String> massagesGroupId = [];
+
+  //get massages
+  void getMassageGroup() {
+    FirebaseFirestore.instance
+        .collection('group')
+        .doc('chat')
+        .collection('massages')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen((event) {
+      massagesGroup = [];
+      massagesGroupId = [];
+      event.docs.forEach((element) {
+        massagesGroup.add(MassageModelGroup.fromJson(element.data()));
+        massagesGroupId.add(element.id);
+      });
+      emit(ChatGetMassageSuccessStates());
+    }).onError((error) {
+      emit(ChatGetMassageErrorStates());
+    });
+  }
+
+  void getGroupImage({
+    required String? text,
+    required String dateTime,
+    required String createdAt,
+  }) async {
+    emit(ChatUploadImageLoadingSuccessStates());
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      uploadGroupImage(
+        chatImage: File(pickedFile.path),
+        text: text,
+        dateTime: dateTime,
+        createdAt: createdAt,
+      );
+    } else {
+      showToast(message: 'No Chat Image Selected', state: ToastState.WARNING);
+      emit(ChatUploadImageLoadingErrorStates());
+    }
+  }
+
+  void uploadGroupImage({
+    required File chatImage,
+    required String? text,
+    required String dateTime,
+    required String createdAt,
+  }) {
+    FirebaseStorage.instance
+        .ref()
+        .child(
+            'chats/${Uri.file(chatImage.path).pathSegments.length / DateTime.now().millisecondsSinceEpoch}')
+        .putFile(chatImage)
+        .then((val) {
+      val.ref.getDownloadURL().then((value) {
+        addMassageToGroup(
+            text: text,
+            dateTime: dateTime,
+            createdAt: createdAt,
+            chatImage: value.toString());
+      }).catchError((onError) {
+        emit(ChatUploadImageLoadingErrorStates());
+      });
+    }).catchError((onError) {
+      emit(ChatUploadImageLoadingErrorStates());
+    });
+  }
+
+  //block from chat
+  void blockUserFromChat({
+    required UserProfile profile,
+  }) {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid.toString())
+        .get()
+        .then((value) {
+      SharedHelper.save(value: value.data()!['block'], key: 'block');
+      emit(SocialDeleteMassageSuccessStates());
+    }).catchError((onError) {
+      emit(SocialDeleteMassageErrorStates());
+    });
+    profile.block = true;
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(profile.uId)
+        .set(profile.toMap())
+        .then((value) {
+      emit(SocialDeleteMassageSuccessStates());
+    }).catchError((onError) {
+      emit(SocialDeleteMassageErrorStates());
+    });
+  }
+
+  //block from app
+  void blockUserFromApp({
+    required UserProfile profile,
+  }) {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid.toString())
+        .get()
+        .then((value) {
+      SharedHelper.save(value: value.data()!['block'], key: 'block_final');
+      emit(SocialDeleteMassageSuccessStates());
+    }).catchError((onError) {
+      emit(SocialDeleteMassageErrorStates());
+    });
+    profile.block_final = true;
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(profile.uId)
+        .set(profile.toMap())
+        .then((value) {
+      emit(SocialDeleteMassageSuccessStates());
+    }).catchError((onError) {
+      emit(SocialDeleteMassageErrorStates());
+    });
+  }
+
+  //delete group massage
+  void deleteGroupMassage({required int index, required String id}) {
+    MassageModelGroup group = MassageModelGroup(
+        name: massagesGroup[index].name,
+        userImage: massagesGroup[index].userImage,
+        createdAt: massagesGroup[index].createdAt,
+        text: 'لقد تم مسح ارسال رسالة',
+        dateTime: massagesGroup[index].dateTime,
+        image: massagesGroup[index].image,
+        senderId: massagesGroup[index].senderId);
+    FirebaseFirestore.instance
+        .collection('group')
+        .doc('chat')
+        .collection('massages')
+        .doc(id)
+        .set(group.toMap())
+        .then((value) {
+      emit(SocialDeleteMassageSuccessStates());
+    }).catchError((onError) {
+      emit(SocialDeleteMassageErrorStates());
+    });
+  }
+
+  void getBlockStatus() {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((value) {
+      SharedHelper.save(value: value.data()!['block'], key: 'block');
+      emit(ChatGetAllUsersLoadingStates());
+    });
+  }
+
+//upload video using user
+  void getVideoUsingUser(
+      {required context,
+      required String name,
+      required String username,
+      required String date}) async {
+    emit(GetVedioLoadingStates());
+    final pickedFile =
+        await ImagePicker().pickVideo(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      uploadVideoUsingUser(
+        date: date,
+        name: name,
+        username: username,
+        context: context,
+        video: File(pickedFile.path),
+      );
+    } else {
+      showToast(message: 'No Chat Image Selected', state: ToastState.WARNING);
+      emit(GetVedioErrorStates());
+    }
+  }
+
+  double progress = 0.0;
+  void uploadVideoUsingUser(
+      {required File video,
+      required context,
+      required String name,
+      required String username,
+      required String date}) {
+    progress = 0.0;
+    UploadTask task = FirebaseStorage.instance
+        .ref()
+        .child(
+            'Videos/${Uri.file(video.path).pathSegments.length / DateTime.now().millisecondsSinceEpoch}')
+        .putFile(
+            video,
+            firebase_storage.SettableMetadata(
+              contentType: 'video/mp4',
+            ));
+    task.snapshotEvents.listen((event) {
+      progress =
+          ((event.bytesTransferred.toDouble() / event.totalBytes.toDouble()) *
+                  100)
+              .roundToDouble();
+      print(progress);
+      emit(GetVedioLoadingStates());
+    });
+
+    task.then((val) {
+      val.ref.getDownloadURL().then((value) {
+        print(value);
+        storeVideoInFirestoreUsingUser(
+            link: value.toString(),
+            videoName: name,
+            username: username,
+            date: date,
+            context: context);
+      }).catchError((onError) {
+        showToast(message: onError.toString(), state: ToastState.ERROR);
+        emit(GetVedioErrorStates());
+      });
+    }).catchError((onError) {
+      showToast(message: onError.toString(), state: ToastState.WARNING);
+      emit(GetVedioErrorStates());
+    });
+  }
+
+  void storeVideoInFirestoreUsingUser({
+    required String videoName,
+    required String link,
+    required String username,
+    required String date,
+    required context,
+  }) {
+    VideoModelUser model = VideoModelUser(
+        name: videoName, link: link, date: date, username: username);
+    FirebaseFirestore.instance
+        .collection('videosUsingUser')
+        .add(model.toMap())
+        .then((value) {
+      showToast(
+          message: 'Video Uploaded Successfully', state: ToastState.SUCCESS);
+      emit(GetVedioSuccessStates());
+    }).catchError((onError) {
+      print('pppppppppppppppppppppppp${onError.toString()}');
+      showToast(message: onError.toString(), state: ToastState.WARNING);
+      emit(GetVedioErrorStates());
+    });
+  }
+
+  //upload video using admin
+  void getVideo({
+    required context,
+    required String name,
+  }) async {
+    emit(GetVedioLoadingStates());
+    final pickedFile =
+        await ImagePicker().pickVideo(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      uploadVideo(
+        name: name,
+        context: context,
+        video: File(pickedFile.path),
+      );
+    } else {
+      showToast(message: 'No Chat Image Selected', state: ToastState.WARNING);
+      emit(GetVedioErrorStates());
+    }
+  }
+
+  void uploadVideo({
+    required File video,
+    required context,
+    required String name,
+  }) {
+    UploadTask task = FirebaseStorage.instance
+        .ref()
+        .child(
+            'Videos/${Uri.file(video.path).pathSegments.length / DateTime.now().millisecondsSinceEpoch}')
+        .putFile(
+            video,
+            firebase_storage.SettableMetadata(
+              contentType: 'video/mp4',
+            ));
+    //calculate progress
+    task.snapshotEvents.listen((event) {
+      progress =
+          ((event.bytesTransferred.toDouble() / event.totalBytes.toDouble()) *
+                  100)
+              .roundToDouble();
+      print(progress);
+      emit(GetVedioLoadingStates());
+    });
+    task.then((val) {
+      val.ref.getDownloadURL().then((value) {
+        print(value);
+        storeVideoInFirestore(
+            link: value.toString(), videoName: name, context: context);
+      }).catchError((onError) {
+        showToast(message: onError.toString(), state: ToastState.ERROR);
+        emit(GetVedioErrorStates());
+      });
+    }).catchError((onError) {
+      showToast(message: onError.toString(), state: ToastState.WARNING);
+      emit(GetVedioErrorStates());
+    });
+  }
+
+  void storeVideoInFirestore({
+    required String videoName,
+    required String link,
+    required context,
+  }) {
+    VideoModel model = VideoModel(
+      name: videoName,
+      link: link,
+    );
+    FirebaseFirestore.instance
+        .collection('videos')
+        .add(model.toMap())
+        .then((value) {
+      showToast(
+          message: 'Video Uploaded Successfully', state: ToastState.SUCCESS);
+      emit(GetVedioSuccessStates());
+    }).catchError((onError) {
+      print('pppppppppppppppppppppppp${onError.toString()}');
+      showToast(message: onError.toString(), state: ToastState.WARNING);
+      emit(GetVedioErrorStates());
+    });
+  }
+
+//upload image using user
+  void getImageUsingUser(
+      {required context,
+      required String name,
+      required String username,
+      required String date}) async {
+    emit(GetImageLoadingStates());
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      uploadImageUsingUser(
+        date: date,
+        name: name,
+        username: username,
+        context: context,
+        Image: File(pickedFile.path),
+      );
+    } else {
+      showToast(message: 'No Chat Image Selected', state: ToastState.WARNING);
+      emit(GetImageErrorStates());
+    }
+  }
+
+  void uploadImageUsingUser(
+      {required File Image,
+      required context,
+      required String name,
+      required String username,
+      required String date}) {
+    FirebaseStorage.instance
+        .ref()
+        .child(
+            'Images/${Uri.file(Image.path).pathSegments.length / DateTime.now().millisecondsSinceEpoch}')
+        .putFile(Image)
+        .then((val) {
+      val.ref.getDownloadURL().then((value) {
+        print(value);
+        storeImageInFirestoreUsingUser(
+            link: value.toString(),
+            Image: name,
+            username: username,
+            date: date,
+            context: context);
+      }).catchError((onError) {
+        showToast(message: onError.toString(), state: ToastState.ERROR);
+        emit(GetImageErrorStates());
+      });
+    }).catchError((onError) {
+      showToast(message: onError.toString(), state: ToastState.WARNING);
+      emit(GetImageErrorStates());
+    });
+  }
+
+  void storeImageInFirestoreUsingUser({
+    required String Image,
+    required String link,
+    required String username,
+    required String date,
+    required context,
+  }) {
+    ImageModelUser model =
+        ImageModelUser(name: Image, link: link, date: date, username: username);
+    FirebaseFirestore.instance
+        .collection('imagesUsingUser')
+        .add(model.toMap())
+        .then((value) {
+      showToast(
+          message: 'Image Uploaded Successfully', state: ToastState.SUCCESS);
+      emit(GetImageSuccessStates());
+    }).catchError((onError) {
+      print('pppppppppppppppppppppppp${onError.toString()}');
+      showToast(message: onError.toString(), state: ToastState.WARNING);
+      emit(GetImageErrorStates());
+    });
+  }
+
+  //upload image using admin
+  void getImage({
+    required context,
+    required String name,
+  }) async {
+    emit(GetImageLoadingStates());
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      uploadImage(
+        name: name,
+        context: context,
+        Image: File(pickedFile.path),
+      );
+    } else {
+      showToast(message: 'No Chat Image Selected', state: ToastState.WARNING);
+      emit(GetImageErrorStates());
+    }
+  }
+
+  void uploadImage({
+    required File Image,
+    required context,
+    required String name,
+  }) {
+    FirebaseStorage.instance
+        .ref()
+        .child(
+            'Images/${Uri.file(Image.path).pathSegments.length / DateTime.now().millisecondsSinceEpoch}')
+        .putFile(Image)
+        .then((val) {
+      val.ref.getDownloadURL().then((value) {
+        print(value);
+        storeImageInFirestore(
+            link: value.toString(), ImageName: name, context: context);
+      }).catchError((onError) {
+        showToast(message: onError.toString(), state: ToastState.ERROR);
+        emit(GetImageErrorStates());
+      });
+    }).catchError((onError) {
+      showToast(message: onError.toString(), state: ToastState.WARNING);
+      emit(GetImageErrorStates());
+    });
+  }
+
+  void storeImageInFirestore({
+    required String ImageName,
+    required String link,
+    required context,
+  }) {
+    ImageModel model = ImageModel(
+      name: ImageName,
+      link: link,
+    );
+    FirebaseFirestore.instance
+        .collection('images')
+        .add(model.toMap())
+        .then((value) {
+      showToast(
+          message: 'Image Uploaded Successfully', state: ToastState.SUCCESS);
+      emit(GetImageSuccessStates());
+    }).catchError((onError) {
+      print('pppppppppppppppppppppppp${onError.toString()}');
+      showToast(message: onError.toString(), state: ToastState.WARNING);
+      emit(GetImageErrorStates());
+    });
+  }
+
+  //get video using admin
+  List<VideoModel> lecturesVideos = [];
+  void getVideos() {
+    emit(ViewFileLoadingStates());
+    FirebaseFirestore.instance.collection('videos').snapshots().listen((event) {
+      lecturesVideos = [];
+      event.docs.forEach((element) {
+        lecturesVideos.add(VideoModel.fromJson(element.data()));
+      });
+      emit(ViewFileSuccessStates());
+    }).onError((handleError) {
+      emit(ViewFileErrorStates());
+    });
+  }
+
+  //get images using admin
+  List<ImageModel> lecturesImages = [];
+  void getImages() {
+    emit(ViewFileLoadingStates());
+    FirebaseFirestore.instance.collection('images').snapshots().listen((event) {
+      lecturesImages = [];
+      event.docs.forEach((element) {
+        lecturesImages.add(ImageModel.fromJson(element.data()));
+      });
+      emit(ViewFileSuccessStates());
+    }).onError((handleError) {
+      emit(ViewFileErrorStates());
+    });
+  }
+
+  //get videos using user
+  List<VideoModelUser> VideosUsingUser = [];
+  List<String> VideosUsingUserId = [];
+  void getVideosUsingUser() {
+    emit(ViewVedioLoadingStates());
+    FirebaseFirestore.instance
+        .collection('videosUsingUser')
+        .snapshots()
+        .listen((event) {
+      VideosUsingUser = [];
+      VideosUsingUserId = [];
+      event.docs.forEach((element) {
+        VideosUsingUser.add(VideoModelUser.fromJson(element.data()));
+        VideosUsingUserId.add(element.id);
+      });
+      emit(ViewVedioSuccessStates());
+    }).onError((handleError) {
+      print('xxxxxxxxxxxxxxxxxxxxrrrrrrrrrrrr${onError.toString()}');
+      emit(ViewVedioErrorStates());
+    });
+  }
+
+  //accept video from admin
+  void acceptVideoUsingUser({required String videoId}) {
+    {
+      emit(AcceptFileLoadingStates());
+      FirebaseFirestore.instance
+          .collection('videosUsingUser')
+          .doc(videoId)
+          .get()
+          .then((value) {
+        VideoModel model = VideoModel(
+            name: value.data()!['name'], link: value.data()!['link']);
+        FirebaseFirestore.instance
+            .collection('videos')
+            .add(model.toMap())
+            .then((value) async {
+          await FirebaseFirestore.instance
+              .collection('videosUsingUser')
+              .doc(videoId)
+              .delete();
+          emit(AcceptFileSuccessStates());
+        }).catchError((onError) {
+          emit(AcceptFileErrorStates());
+        });
+      }).catchError((onError) {
+        emit(AcceptFileErrorStates());
+      });
+    }
+  }
+
+  //reject video from admin
+  void rejectVideoUsingUser({required String videoId}) {
+    emit(RejectFileLoadingStates());
+    FirebaseFirestore.instance
+        .collection('videosUsingUser')
+        .doc(videoId)
+        .delete()
+        .then((value) {
+      emit(RejectFileSuccessStates());
+    }).catchError((onError) {
+      emit(RejectFileErrorStates());
+    });
+  }
+
+  //get images using user
+  List<ImageModelUser> ImagesUsingUser = [];
+  List<String> ImagesUsingUserId = [];
+  void getImagesUsingUser() {
+    emit(ViewVedioLoadingStates());
+    FirebaseFirestore.instance
+        .collection('imagesUsingUser')
+        .snapshots()
+        .listen((event) {
+      ImagesUsingUser = [];
+      ImagesUsingUserId = [];
+      event.docs.forEach((element) {
+        ImagesUsingUser.add(ImageModelUser.fromJson(element.data()));
+        ImagesUsingUserId.add(element.id);
+      });
+      emit(ViewVedioSuccessStates());
+    }).onError((handleError) {
+      print('xxxxxxxxxxxxxxxxxxxxrrrrrrrrrrrr${onError.toString()}');
+      emit(ViewVedioErrorStates());
+    });
+  }
+
+  //accept image from admin
+  void acceptImageUsingUser({required String imageId}) {
+    {
+      emit(AcceptFileLoadingStates());
+      FirebaseFirestore.instance
+          .collection('imagesUsingUser')
+          .doc(imageId)
+          .get()
+          .then((value) {
+        ImageModel model = ImageModel(
+            name: value.data()!['name'], link: value.data()!['link']);
+        FirebaseFirestore.instance
+            .collection('images')
+            .add(model.toMap())
+            .then((value) async {
+          await FirebaseFirestore.instance
+              .collection('imagesUsingUser')
+              .doc(imageId)
+              .delete();
+          emit(AcceptFileSuccessStates());
+        }).catchError((onError) {
+          emit(AcceptFileErrorStates());
+        });
+      }).catchError((onError) {
+        emit(AcceptFileErrorStates());
+      });
+    }
+  }
+
+  //reject image from admin
+  void rejectImageUsingUser({required String imageId}) {
+    emit(RejectFileLoadingStates());
+    FirebaseFirestore.instance
+        .collection('imagesUsingUser')
+        .doc(imageId)
+        .delete()
+        .then((value) {
+      emit(RejectFileSuccessStates());
+    }).catchError((onError) {
+      emit(RejectFileErrorStates());
+    });
+  }
+  Set usersTemporal={};
 }

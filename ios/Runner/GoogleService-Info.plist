@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>164082280340-oe723quju7j5tol1jviidoida4fiavj8.apps.googleusercontent.com</string>
+	<string>164082280340-qhqb9hh64o8hkesjv13j5338g3pgl61i.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.164082280340-oe723quju7j5tol1jviidoida4fiavj8</string>
+	<string>com.googleusercontent.apps.164082280340-qhqb9hh64o8hkesjv13j5338g3pgl61i</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>164082280340-45daa9bjf67c5hkcemra4pcbcothru11.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.ava</string>
+	<string>com.example.avaBishoy</string>
 	<key>PROJECT_ID</key>
 	<string>sundayschool-18ece</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,7 +31,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:164082280340:ios:b71130f9dc216624ad5181</string>
+	<string>1:164082280340:ios:b2831a5e0e310e50ad5181</string>
 	<key>DATABASE_URL</key>
 	<string>https://sundayschool-18ece-default-rtdb.firebaseio.com</string>
 </dict>

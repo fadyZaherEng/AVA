@@ -1,10 +1,11 @@
+// ignore_for_file: must_be_immutable, use_key_in_widget_constructors
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ava/layout/cubit/cubit.dart';
-import 'package:ava/layout/cubit/states.dart';
-import 'package:ava/models/user_profile.dart';
-import 'package:ava/shared/network/local/cashe_helper.dart';
+import 'package:ava_bishoy/layout/cubit/cubit.dart';
+import 'package:ava_bishoy/layout/cubit/states.dart';
+import 'package:ava_bishoy/models/user_profile.dart';
+import 'package:ava_bishoy/shared/network/local/cashe_helper.dart';
 
 class UsersWaitingScreen extends StatelessWidget {
   @override
@@ -101,7 +102,8 @@ class UsersWaitingScreen extends StatelessWidget {
                   ),
                   MaterialButton(
                     onPressed: () {
-                      ChatHomeCubit.get(context).rejectAccount(profile,context);
+                      ChatHomeCubit.get(context)
+                          .rejectAccount(profile, context);
                     },
                     child: const Text('Reject',
                         style: TextStyle(
