@@ -139,114 +139,117 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       IconButton(
                           onPressed: () {
                             showDialog(
-                              context: context,
-                              barrierDismissible: true,
-                              builder: (context) => AlertDialog(
-                                backgroundColor: SharedHelper.get(
-                                            key: 'theme') ==
-                                        'Light Theme'
-                                    ? Colors.white
-                                    : Theme.of(context).scaffoldBackgroundColor,
-                                title: Text(
-                                  'What do you want?',
-                                  style: Theme.of(context).textTheme.bodyText1,
-                                ),
-                                content: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TextButton(
-                                      onPressed: () {
-                                        navigateToWithReturn(
-                                            context, UploadImagesUsingUser());
-                                      },
-                                      child: Row(
+                                context: context,
+                                barrierDismissible: true,
+                                builder: (context) => AlertDialog(
+                                      backgroundColor: SharedHelper.get(key: 'theme')=='Light Theme'?
+                                      Colors.white:Theme.of(context).scaffoldBackgroundColor,
+                                      title: Text(
+                                        'What do you want?',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyText1,
+                                      ),
+                                      content: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text(
-                                            ChatHomeCubit.get(context)
-                                                .ImagesUsingUser
-                                                .length
-                                                .toString(),
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.pink),
+                                          TextButton(
+                                            onPressed: () {
+                                              navigateToWithReturn(context,
+                                                  UploadImagesUsingUser());
+                                            },
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  ChatHomeCubit.get(context)
+                                                      .ImagesUsingUser
+                                                      .length
+                                                      .toString(),
+                                                  style: const TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.pink),
+                                                ),
+                                                const SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  'Show Images Request',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText2,
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                          const SizedBox(
-                                            width: 5,
+                                          TextButton(
+                                            onPressed: () {
+                                              navigateToWithReturn(context,
+                                                  UploadPDFUsingUser());
+                                            },
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  ChatHomeCubit.get(context)
+                                                      .lecturesUsingUser
+                                                      .length
+                                                      .toString(),
+                                                  style: const TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.pink),
+                                                ),
+                                                const SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  'Show Lectures Request',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText2,
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                          Text(
-                                            'Show Images Request',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyText2,
+                                          TextButton(
+                                            onPressed: () {
+                                              navigateToWithReturn(context,
+                                                  UploadVideosUsingUser());
+                                            },
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  ChatHomeCubit.get(context)
+                                                      .VideosUsingUser
+                                                      .length
+                                                      .toString(),
+                                                  style: const TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.pink),
+                                                ),
+                                                const SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  'Show Videos Request',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText2,
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        navigateToWithReturn(
-                                            context, UploadPDFUsingUser());
-                                      },
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            ChatHomeCubit.get(context)
-                                                .lecturesUsingUser
-                                                .length
-                                                .toString(),
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.pink),
-                                          ),
-                                          const SizedBox(
-                                            width: 5,
-                                          ),
-                                          Text(
-                                            'Show Lectures Request',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyText2,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        navigateToWithReturn(
-                                            context, UploadVideosUsingUser());
-                                      },
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            ChatHomeCubit.get(context)
-                                                .VideosUsingUser
-                                                .length
-                                                .toString(),
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.pink),
-                                          ),
-                                          const SizedBox(
-                                            width: 5,
-                                          ),
-                                          Text(
-                                            'Show Videos Request',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyText2,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
+                                    ));
                           },
                           icon: const Icon(IconBroken.Notification)),
                       if (ChatHomeCubit.get(context)
@@ -279,16 +282,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             context: context,
                             barrierDismissible: false,
                             builder: (context) => AlertDialog(
-                                  backgroundColor:
-                                      SharedHelper.get(key: 'theme') ==
-                                              'Light Theme'
-                                          ? Colors.white
-                                          : Theme.of(context)
-                                              .scaffoldBackgroundColor,
+                                  backgroundColor:  SharedHelper.get(key: 'theme')=='Light Theme'?
+                                  Colors.white:Theme.of(context).scaffoldBackgroundColor,
                                   title: Text(
                                     'What do you want?',
-                                    style:
-                                        Theme.of(context).textTheme.bodyText1,
+                                    style: Theme.of(context).textTheme.bodyText1,
                                   ),
                                   content: Column(
                                     crossAxisAlignment:
