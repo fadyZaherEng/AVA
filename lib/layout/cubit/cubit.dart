@@ -40,7 +40,7 @@ class ChatHomeCubit extends Cubit<ChatHomeStates> {
   var phoneController = TextEditingController();
   var bioController = TextEditingController();
   bool? disAppear;
-  void disAppearPhnone(bool val) {
+  void disAppearPhone(bool val) {
     disAppear = val;
     emit(PhoneState());
   }
